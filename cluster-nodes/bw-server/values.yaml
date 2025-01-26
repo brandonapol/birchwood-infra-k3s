@@ -1,0 +1,19 @@
+replicaCount: 1
+
+image:
+  repository: birchwood-server
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8000
+
+ingress:
+  enabled: false
+
+env:
+  MONGO_URI: mongodb://my-user:my-password@localhost:27017
+
+resources: 
