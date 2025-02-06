@@ -14,6 +14,10 @@ BW_INFRA=/Users/brandonapol/Documents/code/birchwood-infra
 # helm dependency build ${BW_INFRA}/cluster-nodes/platform/istio/istio-base
 # helm dependency build ${BW_INFRA}/cluster-nodes/platform/istio/istio-gateway-ingress
 # helm dependency build ${BW_INFRA}/cluster-nodes/platform/istio/istiod
-helm install istio-base ${BW_INFRA}/cluster-nodes/platform/istio/istio-base -n istio-system
-helm install istiod ${BW_INFRA}/cluster-nodes/platform/istio/istiod -n istio-system --wait
+# helm install istio-base ${BW_INFRA}/cluster-nodes/platform/istio/istio-base -n istio-system
+# helm install istiod ${BW_INFRA}/cluster-nodes/platform/istio/istiod -n istio-system --wait
 # helm install istio-gateway-ingress ${BW_INFRA}/cluster-nodes/platform/istio/istio-gateway-ingress -n istio-gateway
+
+helm repo add argo https://argoproj.github.io/argo-helm 2>/dev/null || true
+helm dependency build "${BW_INFRA}/cluster-nodes/platform/argo-cd"
+helm install argo-cd "${BW_INFRA}/cluster-nodes/platform/argo-cd" -n argo-cd

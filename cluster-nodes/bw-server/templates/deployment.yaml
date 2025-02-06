@@ -1,24 +1,24 @@
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: birchwood-server
-  namespace: server
-  labels:
-    app: birchwood-server
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: birchwood-server
-  template:
-    metadata:
-      labels:
-        app: birchwood-server
-    spec:
-      containers:
-      - name: birchwood-server
-        image: birchwood-server:latest
-        imagePullPolicy: IfNotPresent
-        ports:
-        - containerPort: 5173
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: birchwood-backend
+#   namespace: backend
+#   labels:
+#     app: birchwood-backend
+# spec:
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       app: birchwood-backend
+#   template:
+#     metadata:
+#       labels:
+#         app: birchwood-backend
+#     spec:
+#       containers:
+#       - name: birchwood-backend
+#         image: birchwood-backend:latest
+#         imagePullPolicy: IfNotPresent
+#         ports:
+#         - containerPort: 5173
 

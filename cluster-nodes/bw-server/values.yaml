@@ -1,7 +1,7 @@
 replicaCount: 1
 
 image:
-  repository: birchwood-server
+  repository: 192.168.1.126:5000/birchwood-backend
   pullPolicy: IfNotPresent
   tag: "latest"
 
@@ -9,11 +9,3 @@ service:
   type: ClusterIP
   port: 80
   targetPort: 8000
-
-ingress:
-  enabled: false
-
-env:
-  MONGO_URI: mongodb://my-user:my-password@localhost:27017
-
-resources: 

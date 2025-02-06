@@ -1,0 +1,29 @@
+clusterTLD: "k8s.birchwood.com"
+# primaryGateway: 
+
+argo-cd:
+  nameOverride: ""
+  # namespace: argocd
+  # serviceAccount: argocd-server
+  # service:
+  #   type: ClusterIP
+  dex:
+    enabled: false 
+  global:
+    image: 
+      tag: "v2.4.11"
+  server: 
+    extraArgs: 
+      - --insecure
+    ingress: 
+      enabled: true
+      ingressClassName: "traefik"
+      hosts: 
+        - "argo-cd.k8s.birchwood.com"
+      paths: 
+        - /
+      pathType: "Prefix"
+  configs:
+    secret: 
+      argocdServerAdminPassword: "$2a$10$hmDO5yCzOgYBaZhQklCZVulNOQiFjRZBGYhsWguMR5K5HsWV1ww6C%"
+    

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-minikube start --cpus=4 --memory=3072 --disk-size=20g
+# minikube start --cpus=4 --memory=3072 --disk-size=20g
 
 export REPO="/Users/brandonapol/Documents/code/Birchwood/"
 cd "$REPO" || exit
@@ -9,8 +9,8 @@ cd "$REPO" || exit
 kubectl apply -f $REPO/birchwood-k8s/namespaces/
 
 # setup istio
-istioctl install --set profile=demo -y
-kubectl label namespace default istio-injection=enabled
+# istioctl install --set profile=demo -y
+# kubectl label namespace default istio-injection=enabled
 
 
 
