@@ -8,7 +8,7 @@ spec:
     - list:
         elements:
           - name: postgres
-            namespace: shared
+            namespace: argo-cd
   template:
     metadata:
       name: 'postgres'
