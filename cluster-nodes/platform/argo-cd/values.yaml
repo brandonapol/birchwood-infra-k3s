@@ -3,10 +3,6 @@ clusterTLD: "k8s.birchwood.com"
 
 argo-cd:
   nameOverride: ""
-  # namespace: argocd
-  # serviceAccount: argocd-server
-  # service:
-  #   type: ClusterIP
   dex:
     enabled: false 
   global:
