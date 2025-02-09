@@ -1,11 +1,13 @@
-replicaCount: 1
+common-values:
+  replicaCount: 1
 
-image:
-  repository: 192.168.1.126:5000/birchwood-backend
-  pullPolicy: IfNotPresent
-  tag: "latest"
+  image:
+    repository: 192.168.1.126:5000/
+    name: birchwood-backend
+    pullPolicy: IfNotPresent
+    tag: "latest"
 
-service:
-  type: ClusterIP
-  port: 80
-  targetPort: 8000
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 8000
