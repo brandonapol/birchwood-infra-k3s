@@ -1,0 +1,64 @@
+---
+- name: Install k3s
+  hosts: raspberry_pis
+  become: true
+  gather_facts: true
+
+  vars:
+    k3s_version: "v1.28.4+k3s2"  # Latest stable version
+    kubeconfig_path: "/Users/brandonapol/Documents/code/birchwood-infra/ansible/k3s.yaml"
+
+  tasks:
+    - name: Download k3s installation script
+      get_url:
+        url: https://get.k3s.io
+        dest: /tmp/k3s-install.sh
+        mode: '0755'
+
+    - name: Install k3s on control node (pi1)
+      shell: /tmp/k3s-install.sh server --token-file /var/lib/rancher/k3s/server/node-token --tls-san {{ hostvars['pi1']['ansible_host'] }} --node-label "node-role=control-plane"
+      when: inventory_hostname == 'pi1'
+      register: k3s_install
+      args:
+        creates: /usr/local/bin/k3s
+
+    - name: Get k3s token from control node
+      shell: sudo cat /var/lib/rancher/k3s/server/node-token
+      register: k3s_token
+      when: inventory_hostname == 'pi1'
+
+    - name: Install k3s on worker node (pi2)
+      shell: /tmp/k3s-install.sh agent --server https://{{ hostvars['pi1']['ansible_host'] }}:6443 --token-file /var/lib/rancher/k3s/server/node-token
+      when: inventory_hostname == 'pi2'
+      register: k3s_install
+      args:
+        creates: /usr/local/bin/k3s
+
+    - name: Wait for k3s to be ready
+      shell: kubectl get nodes
+      register: k3s_status
+      until: k3s_status.rc == 0
+      retries: 30
+      delay: 10
+      when: inventory_hostname == 'pi1'
+
+    - name: Fetch kubeconfig from control node
+      fetch:
+        src: /etc/rancher/k3s/k3s.yaml
+        dest: "{{ kubeconfig_path }}"
+        flat: yes
+      when: inventory_hostname == 'pi1'
+
+    - name: Display setup instructions
+      debug:
+        msg: |
+          K3s installation completed!
+          
+          To use kubectl from your MacBook:
+          1. Copy the kubeconfig file:
+             scp {{ kubeconfig_path }} ~/.kube/config
+          2. Update the server address in the kubeconfig to use pi1's IP:
+             sed -i '' 's/127.0.0.1/{{ hostvars['pi1']['ansible_host'] }}/' ~/.kube/config
+          3. Test the connection:
+             kubectl get nodes
+      when: inventory_hostname == 'pi1' 

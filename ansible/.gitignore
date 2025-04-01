@@ -32,3 +32,4 @@ vault.yaml
 
 # Local configuration
 ansible.cfg 
+k3s.yaml
