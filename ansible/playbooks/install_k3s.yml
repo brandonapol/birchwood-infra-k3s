@@ -5,10 +5,20 @@
   gather_facts: true
 
   vars:
-    k3s_version: "v1.28.4+k3s2"  # Latest stable version
+    k3s_version: "v1.32.3+k3s1"  # Latest stable version
     kubeconfig_path: "/Users/brandonapol/Documents/code/birchwood-infra/ansible/k3s.yaml"
+    k3s_token_path: "/var/lib/rancher/k3s/server/node-token"
 
   tasks:
+    - name: Create k3s directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+      with_items:
+        - /var/lib/rancher/k3s/server
+        - /etc/rancher/k3s
+
     - name: Download k3s installation script
       get_url:
         url: https://get.k3s.io
@@ -16,28 +26,48 @@
         mode: '0755'
 
     - name: Install k3s on control node (pi1)
-      shell: /tmp/k3s-install.sh server --token-file /var/lib/rancher/k3s/server/node-token --tls-san {{ hostvars['pi1']['ansible_host'] }} --node-label "node-role=control-plane"
+      shell: /tmp/k3s-install.sh server --token-file {{ k3s_token_path }} --tls-san {{ hostvars['pi1']['ansible_host'] }} --node-label "node-role=control-plane"
       when: inventory_hostname == 'pi1'
       register: k3s_install
       args:
         creates: /usr/local/bin/k3s
 
-    - name: Get k3s token from control node
-      shell: sudo cat /var/lib/rancher/k3s/server/node-token
-      register: k3s_token
-      when: inventory_hostname == 'pi1'
-
-    - name: Install k3s on worker node (pi2)
-      shell: /tmp/k3s-install.sh agent --server https://{{ hostvars['pi1']['ansible_host'] }}:6443 --token-file /var/lib/rancher/k3s/server/node-token
-      when: inventory_hostname == 'pi2'
-      register: k3s_install
-      args:
-        creates: /usr/local/bin/k3s
-
-    - name: Wait for k3s to be ready
+    - name: Wait for control node to be ready
       shell: kubectl get nodes
       register: k3s_status
       until: k3s_status.rc == 0
+      retries: 30
+      delay: 10
+      when: inventory_hostname == 'pi1'
+
+    - name: Get k3s token from control node
+      shell: cat {{ k3s_token_path }}
+      register: k3s_token
+      when: inventory_hostname == 'pi1'
+
+    - name: Set k3s token for other nodes
+      set_fact:
+        k3s_token: "{{ hostvars['pi1']['k3s_token'].stdout }}"
+      when: inventory_hostname != 'pi1'
+
+    - name: Create token file on worker nodes
+      copy:
+        content: "{{ k3s_token }}"
+        dest: "{{ k3s_token_path }}"
+        mode: '0600'
+      when: inventory_hostname != 'pi1'
+
+    - name: Install k3s on worker nodes
+      shell: /tmp/k3s-install.sh agent --server https://{{ hostvars['pi1']['ansible_host'] }}:6443 --token-file {{ k3s_token_path }}
+      when: inventory_hostname != 'pi1'
+      register: k3s_install
+      args:
+        creates: /usr/local/bin/k3s
+
+    - name: Wait for worker nodes to join cluster
+      shell: kubectl get nodes
+      register: k3s_status
+      until: k3s_status.rc == 0 and inventory_hostname in k3s_status.stdout
       retries: 30
       delay: 10
       when: inventory_hostname == 'pi1'
