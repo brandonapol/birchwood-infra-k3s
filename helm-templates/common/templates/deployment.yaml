@@ -30,7 +30,7 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           {{- end }}
           {{- if .Values.command }}
-          command: {{ .Values.command}}
+          command: {{ .Values.command }}
           {{- end }}
           {{- if .Values.extraArgs }}
           args: 
@@ -38,28 +38,29 @@ spec:
             - "{{ . }}"
             {{- end }}
           {{- end }}
+          {{- if .Values.containerPorts }}
           ports:
             {{- range $index, $port := .Values.containerPorts }}
             - name: {{ $port.name }}
               containerPort: {{ $port.port }}
               protocol: {{ $port.protocol }}
             {{- end }}
-          # livenessProbe:
-          #   httpGet:
-          #     path: /
-          #     port: http
-          # readinessProbe:
-          #   httpGet:
-          #     path: /
-          #     port: http
+          {{- end }}
+
+          {{- if .Values.envFrom }}
           envFrom:
-            {{- toYaml .Values.envFrom | nindent 10 }}
+            {{- toYaml .Values.envFrom | nindent 12 }}
+          {{- end }}
+          
+          {{- if .Values.env }}
           env:
             {{- range $key, $value := .Values.env }}
             - name: {{ $key }}
               value: '{{ $value }}'
             {{- end }}
-          {{- if .Volumes.volumeMounts }}
+          {{- end }}
+
+          {{- if .Values.volumeMounts }}
           volumeMounts:
             {{- range $index, $vm := .Values.volumeMounts }}
             - name: {{ $vm.name }}
@@ -85,4 +86,6 @@ spec:
         {{- end }}
         {{- end }}
       {{- end }}
-      serviceAccount: {{ .Values.boundServiceAccount}}
+      {{- if .Values.boundServiceAccount }}
+      serviceAccount: {{ .Values.boundServiceAccount }}
+      {{- end }}
